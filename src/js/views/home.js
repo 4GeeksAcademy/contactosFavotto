@@ -1,4 +1,4 @@
-import React, { StrictMode, useEffect, useContext } from "react";
+import React, { useEffect, useContext } from "react";
 import "../../styles/home.css";
 import ContactCard from "../component/contactCard.js"
 import { Context } from "../store/appContext";

@@ -1,5 +1,5 @@
 import React from "react";
-import "../../styles/contactCard.css";
+import "../../styles/home.css";
 import { useNavigate } from "react-router";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,7 +20,7 @@ const ContactCard = ({ id, name, email, phone, address  }) => {
         <div className = "container border border-dark-subtle d-flex gap-3 justify-content-between p-3 col-12">
             <div className= "imageContact col-4">
                 <img 
-                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8mcdA_uoJahxn3PQ-IC9WROV-GF2wuTl2FQ&s" 
+                    src="https://images.vexels.com/media/users/3/154702/isolated/lists/02ea9139401feb6921516fb12bb75061-icono-de-contacto-de-conversacion-personal.png" 
                     alt="contact_image.jpg"/>
             </div>
             <div className= "infoContact d-flex flex-column col-5 justify-content-start my-3">
