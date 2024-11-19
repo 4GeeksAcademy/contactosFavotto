@@ -1,7 +1,11 @@
+import { container } from "webpack";
+import EditContact from "../component/editContact";
 
-const getState = ({ getStore, getActions, setStore }) => {//setStore acutualiza el store
+const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
+			contactList: [],
+
 			demo: [
 				{
 					title: "FIRST",
@@ -12,29 +16,88 @@ const getState = ({ getStore, getActions, setStore }) => {//setStore acutualiza 
 					title: "SECOND",
 					background: "white",
 					initial: "white"
-				},
-
-			],
-
-			listContacts: []
-
-
+				}
+			]
 		},
 		actions: {
-			
+			// Use getActions to call a function within a fuction
+	
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
 			},
-			loadSomeData: () => {
-				/**
-					fetch().then().then(data => setStore({ "foo": data.bar }))
-				*/
+
+			loadContacts: async() => {
+				const response = await fetch ("https://playground.4geeks.com/contact/agendas/alessf"
+,{
+					method: "GET"
+				})
+				const data = await response.json();
+				setStore({contactList: data.contacts});
 			},
+
+			saveContact: async(contactData) =>{
+				
+				if (!contactData.name || !contactData.email || !contactData.phone || !contactData.address) {
+					console.error("All fields are required.");
+					return;
+				}
+				const response = await fetch ("https://playground.4geeks.com/contact/agendas/alessf/contacts", {
+					method: "POST",
+					body: JSON.stringify(contactData),
+					headers: {
+						"Content-Type": "application/json"
+					}
+				})
+				getActions().loadContacts();
+			},
+
+			deleteContact: async(id) =>{
+				try{
+					const response = await fetch ("https://playground.4geeks.com/contact/agendas/alessf/contacts/" + id, {
+					method: "DELETE",
+					});
+					if(response.ok) {
+						console.log("Usuario borrado")
+						getActions().loadContacts();
+					} else {
+						console.error("Error al eliminar contactro")
+					}
+				} catch (error) {
+					console.error("Error en la eliminación del contacto:", error);
+				}	
+			},
+
+			editOneContact: async (contactData, id) => {
+				try {
+					const response = await fetch ("https://playground.4geeks.com/contact/agendas/alessf/contacts/" + id, {
+						method: "PUT",
+						body: JSON.stringify(contactData),
+						headers: {
+						"Content-Type": "application/json"
+					}});
+					if (response.ok) {
+						await getActions().loadContacts();
+						console.log("Contacto actualizado")
+					} else {
+						console.error("El contacto no fue actualizado")
+					}
+				} catch (error) {
+					console.error("Error en la actualización del contacto", error);
+				}
+			},
+
+			createUser: async () => {
+				const response = await fetch("https://playground.4geeks.com/contact/agendas/alessf", {
+					method: "POST"
+				})
+			},
+
 			changeColor: (index, color) => {
 				
 				const store = getStore();
 
 				
+			
 				const demo = store.demo.map((elm, i) => {
 					if (i === index) elm.background = color;
 					return elm;
@@ -42,115 +105,9 @@ const getState = ({ getStore, getActions, setStore }) => {//setStore acutualiza 
 
 				
 				setStore({ demo: demo });
-			},
-
-			createUser: () => {
-				fetch("https://playground.4geeks.com/contact/agendas/alessf", {
-					method: "POST",
-
-				})
-					.then((response) => response.json())
-					.then((data) => {
-						console.log(data);
-
-					})
-					.catch((error) => console.log(error));
-			},
-
-			getInfoContacts: () => {
-				fetch("https://playground.4geeks.com/contact/agendas/alessf/contacts", {
-					method: "GET"
-				})
-					.then((response) => {
-						if (response.status == 404) {
-							getActions().createUser()
-						}
-						if (response.ok) {
-							return response.json()
-						}
-					})
-					.then((data) => {
-						if (data) {
-							setStore({ listContacts: data.contacts })
-						}
-					})
-					.catch((error => console.log(error)))
-			},
-
-			addContactToList: (contact) => {
-				const store = getStore();
-				setStore({ ...store, listContacts: [...store.listContacts, contact] })
-			},
-
-			createContact: (payload) => {
-				fetch("https://playground.4geeks.com/contact/agendas/alessf/contacts", {
-					method: "POST",
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(
-						payload
-					),
-				})
-					.then((response) => response.json())
-					.then((data) => {
-						console.log(data);
-						const actions = getActions(); 
-						actions.addContactToList(data);
-						console.log("Contacto agregado:", data);
-					})
-					.catch((error) => console.log(error));
-			},
-			deleteContact: (id) => {
-				fetch(`https://playground.4geeks.com/contact/agendas/alessf/contacts/${id}`, {
-					method: "DELETE",
-				})
-					.then((response) => {
-						console.log(response)
-						if (response.ok) {
-							const store = getStore();
-							const updatedContacts = store.listContacts.filter(contact => contact.id !== id);
-							setStore({ listContacts: updatedContacts });
-							console.log(`Contacto con ID ${id} eliminado`);
-						} else {
-							console.log("Error al eliminar contacto");
-						}
-					})
-					.catch((error) => console.log(error));
-			},
-
-			editContact: (id, contact) => {
-				const store = getStore()
-				fetch(`https://playground.4geeks.com/contact/agendas/alessf/contacts/${id}`, {
-					method: "PUT",
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(contact)
-				})
-					.then((response) => {
-						if (response.ok) {
-							return response.json()
-						}
-					})
-					.then((data) => {
-						if (data) {
-							const updatedList = store.listContacts.map(contact => {
-								if (contact.id == id) {
-									contact = data
-								}
-								return contact
-							})
-							setStore({ listContacts: updatedList })
-						}
-					})
-					.catch((error) => console.log(error));
-
-
 			}
 		}
-	}
+	};
 };
-
 
 export default getState;
